@@ -10,17 +10,9 @@ module ShippyProAPI
       @client = client
     end
 
-    # def get_request(url, params: {}, headers: {})
-    #   handle_response client.connection.get(url, params, headers)
-    # end
-
     def post_request(url, body:, headers: {})
       handle_response client.connection.post(url, parse_body(body), headers)
     end
-
-    # def put_request(url, body:, headers: {})
-    #   handle_response client.connection.put(url, parse_body(body), headers)
-    # end
 
     private
 
