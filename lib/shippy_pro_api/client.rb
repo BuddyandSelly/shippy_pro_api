@@ -1,5 +1,6 @@
 require "faraday"
 require "faraday_middleware"
+require "base64"
 
 module ShippyProAPI
   class Client
