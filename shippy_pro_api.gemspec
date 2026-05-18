@@ -37,7 +37,8 @@ Gem::Specification.new do |spec|
   # guide at: https://bundler.io/guides/creating_gem.html
 
   spec.add_dependency 'activesupport'
-  spec.add_dependency 'faraday', '~> 2.7.10'
+  spec.add_dependency 'faraday', '>= 1.0', '< 3.0'
+  spec.add_dependency 'faraday_middleware', '~> 1.0'
 
   spec.add_development_dependency 'rspec'
   spec.add_development_dependency 'pry'
