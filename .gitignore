@@ -10,3 +10,7 @@
 # rspec failure tracking
 .rspec_status
 .env
+
+# Gemfile.lock is intentionally not committed — this is a library gem,
+# and the consumer app's lockfile resolves the actual versions.
+Gemfile.lock
