@@ -1,0 +1,38 @@
+name: Claude Code
+
+on:
+  pull_request_review_comment:
+    types: [created]
+
+jobs:
+  claude:
+    if: |
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: write # Required for cancel-workflow-action and Claude to read CI results on PRs
+    steps:
+      - name: Cancel previous Workflow Actions
+        uses: styfle/cancel-workflow-action@0.13.1
+        with:
+          access_token: ${{ github.token }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Run Claude Code
+        id: claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: |
+            --model claude-opus-4-8
+            --max-turns 20
+            --allowedTools "Bash(bundle install)" "Bash(bundle exec rspec *)" "Bash(bundle exec rubocop *)"
+            --append-system-prompt "This is the ShippyPro API wrapper gem (Faraday 1.x, Ruby >= 2.6). Guard the request-serialization contract: exact-case keys (CarrierID, TransactionID), snake_case passthrough keys (to_address, from_address, parcels, weight_unit, dimension_unit) — the golden-payload spec must keep passing. Watch for backward-compatibility breaks for existing callers and for errors hidden in HTTP-200 bodies."
