@@ -5,6 +5,7 @@ require_relative "shippy_pro_api/version"
 module ShippyProAPI
   autoload :Client, "shippy_pro_api/client"
   autoload :Error, "shippy_pro_api/error"
+  autoload :ApiError, "shippy_pro_api/error"
   autoload :Object, "shippy_pro_api/object"
   autoload :Resource, "shippy_pro_api/resource"
 

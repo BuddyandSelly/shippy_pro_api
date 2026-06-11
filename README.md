@@ -2,6 +2,14 @@
 
 This is an API wrapper gem for ShippyPro API.
 
+## Divergence from upstream (BuddyandSelly fork)
+
+This fork ([PostCo/shippy_pro_api](https://github.com/PostCo/shippy_pro_api) upstream) carries the following changes, versioned as `0.2.1.buddy.N`:
+
+- **Faraday 1.x compatibility** (`0.2.1.buddy.1`).
+- **Acronym-correct request key serialization** (`0.2.1.buddy.2`): `carrier_id`, `transaction_id`, `rate_id`, and `api_orders_id` serialize to `CarrierID`, `TransactionID`, `RateID`, `APIOrdersID` (Rails camelize would produce `CarrierId` etc., which ShippyPro does not accept). `weight_unit` and `dimension_unit` are passed through in snake_case, matching ShippyPro's Ship API.
+- **Errors inside HTTP 200 bodies raise `ShippyProAPI::ApiError`** (`0.2.1.buddy.2`): ShippyPro can report failures as `{"Error": "..."}`/`{"ErrorMessage": "..."}` with status 200; these now raise instead of returning a response object with no label. `ApiError < Error`, and carries the parsed body via `#body`.
+
 ## Installation
 
 Install the gem and add to the application's Gemfile by executing:
