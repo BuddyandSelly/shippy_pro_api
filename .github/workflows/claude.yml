@@ -36,6 +36,6 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           claude_args: |
             --model claude-opus-4-8
-            --max-turns 20
-            --allowedTools "Bash(bundle install)" "Bash(bundle exec rspec *)" "Bash(bundle exec rubocop *)"
+            --max-turns 40
+            --allowedTools "Bash(bundle install)" "Bash(bundle exec rspec:*)" "Bash(bundle exec rubocop:*)" "Bash(git diff:*)" "Bash(git log:*)" "Bash(git status)" "Bash(git show:*)"
             --append-system-prompt "This is the ShippyPro API wrapper gem (Faraday 1.x, Ruby >= 2.6). Guard the request-serialization contract: exact-case keys (CarrierID, TransactionID), snake_case passthrough keys (to_address, from_address, parcels, weight_unit, dimension_unit) — the golden-payload spec must keep passing. Watch for backward-compatibility breaks for existing callers and for errors hidden in HTTP-200 bodies."
