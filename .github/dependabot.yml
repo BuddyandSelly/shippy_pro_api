@@ -1,0 +1,23 @@
+version: 2
+# Dependabot's bundler support only looks at Gemfile, gems.rb and *.gemspec, so
+# gemfiles/faraday1.gemfile is out of its reach; it pins faraday on purpose.
+updates:
+  - package-ecosystem: bundler
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      development-dependencies:
+        dependency-type: development
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      github-actions:
+        patterns:
+          - "*"
