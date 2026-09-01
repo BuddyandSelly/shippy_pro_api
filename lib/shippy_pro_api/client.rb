@@ -1,8 +1,12 @@
+# frozen_string_literal: true
+
+# The json request and response middleware ships with faraday itself since
+# 1.10, so faraday_middleware is not needed for it any more.
 require "faraday"
-require "faraday_middleware"
 require "base64"
 
 module ShippyProAPI
+  # Holds the credentials and builds the Faraday connection every resource posts to.
   class Client
     BASE_URL = "https://www.shippypro.com/api"
 

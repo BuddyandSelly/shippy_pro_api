@@ -1,5 +1,16 @@
+# RuboCop replaces its default AllCops/Exclude with the one below instead of
+# adding to it, and CI installs the bundle into vendor/bundle, where a gem with
+# a .rubocop.yml of its own would be picked up.
+inherit_mode:
+  merge:
+    - Exclude
+
 AllCops:
-  TargetRubyVersion: 2.6
+  TargetRubyVersion: 3.2
+  NewCops: enable
+  SuggestExtensions: false
+  Exclude:
+    - 'vendor/**/*'
 
 Style/StringLiterals:
   Enabled: true
@@ -11,3 +22,36 @@ Style/StringLiteralsInInterpolation:
 
 Layout/LineLength:
   Max: 120
+
+# The responses are OpenStructs by design: an application reads whatever fields
+# ShippyPro sent, and the field list is neither fixed nor documented. Swapping in
+# a Struct or a Hash would change the gem's public interface.
+Style/OpenStructUse:
+  Exclude:
+    - 'lib/shippy_pro_api/object.rb'
+
+# The gem keeps its development dependencies in the gemspec, next to the runtime ones.
+Gemspec/DevelopmentDependencies:
+  EnforcedStyle: gemspec
+
+# Requiring MFA would lock out an unattended `gem push`, which is how this fork
+# is released.
+Gemspec/RequireMFA:
+  Enabled: false
+
+# handle_response maps the seven documented ShippyPro failure statuses onto their
+# messages. A case statement is the clearest shape for that, and client_spec.rb
+# covers every arm of it.
+Metrics/CyclomaticComplexity:
+  Exclude:
+    - 'lib/shippy_pro_api/resource.rb'
+
+Metrics/MethodLength:
+  Exclude:
+    - 'lib/shippy_pro_api/resource.rb'
+
+# An example group is a block, and a readable one runs longer than 25 lines.
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*.rb'
+    - '*.gemspec'

@@ -1,0 +1,7 @@
+# frozen_string_literal: true
+
+# The gem supports faraday 1.10 and up. The default Gemfile resolves to the
+# latest faraday, this one pins the older major so that CI covers it too.
+eval_gemfile File.expand_path("../Gemfile", __dir__)
+
+gem "faraday", "~> 1.10"
