@@ -5,3 +5,9 @@
 eval_gemfile File.expand_path("../Gemfile", __dir__)
 
 gem "faraday", "~> 1.10"
+
+# faraday 1's JSON response middleware calls ::JSON.parse(body, parser_options)
+# with two positional arguments, which json 3.0 removed, so every response under
+# this combination raises Faraday::ParsingError. The default Gemfile is free to
+# take json 3 because faraday 2 parses through a different path.
+gem "json", "< 3"
