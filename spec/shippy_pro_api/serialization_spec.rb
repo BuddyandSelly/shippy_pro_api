@@ -3,15 +3,16 @@
 RSpec.describe "request key serialization" do
   let(:client) { ShippyProAPI::Client.new(api_key: "test_key") }
 
+  # WebMock passes the request to a dynamic response block, which is the place
+  # where the serialized request body can be read back.
   def stub_ship_and_capture
     captured = nil
-    stub_request(:post, "https://www.shippypro.com/api")
-      .with { |req| captured = JSON.parse(req.body); true }
-      .to_return(
-        status: 200,
+    stub_request(:post, "https://www.shippypro.com/api").to_return do |request|
+      captured = JSON.parse(request.body)
+      { status: 200,
         body: { "LabelURL" => ["https://example.com/label.pdf"] }.to_json,
-        headers: { "Content-Type" => "application/json" }
-      )
+        headers: { "Content-Type" => "application/json" } }
+    end
     -> { captured }
   end
 
@@ -44,6 +45,39 @@ RSpec.describe "request key serialization" do
       params = capture.call["Params"]
       expect(params).to include("weight_unit" => "kg", "dimension_unit" => "cm")
       expect(params.keys).not_to include("WeightUnit", "DimensionUnit")
+    end
+  end
+
+  describe "nested values" do
+    # parcels is a passthrough key, so an array only gets walked when it hangs off a
+    # key that is camelized -- ShippyPro's Items/CustomsItems lists, for instance.
+    it "camelizes the keys of hashes nested inside an array" do
+      capture = stub_ship_and_capture
+
+      client.shipment.create(items: [{ sku: "A-1", qty: 2 }, { sku: "B-2", qty: 1 }])
+
+      expect(capture.call["Params"]).to eq(
+        "Items" => [{ "Sku" => "A-1", "Qty" => 2 }, { "Sku" => "B-2", "Qty" => 1 }]
+      )
+    end
+
+    it "leaves an array of primitives as it is" do
+      capture = stub_ship_and_capture
+
+      client.shipment.create(label_format: %w[PDF ZPL])
+
+      expect(capture.call["Params"]).to eq("LabelFormat" => %w[PDF ZPL])
+    end
+
+    it "keeps nested keys of a passthrough key in snake_case" do
+      capture = stub_ship_and_capture
+
+      client.shipment.create(parcels: [{ weight_value: 1.5 }], to_address: { street1: "ul. Magazynowa 12" })
+
+      expect(capture.call["Params"]).to eq(
+        "parcels" => [{ "weight_value" => 1.5 }],
+        "to_address" => { "street1" => "ul. Magazynowa 12" }
+      )
     end
   end
 
@@ -94,7 +128,8 @@ RSpec.describe "request key serialization" do
             "phone" => "+48501122334", "email" => "jan.kowalski@example.pl"
           },
           "to_address" => {
-            "name" => "Acme Warehouse", "company" => "Acme Sp. z o.o.", "street1" => "ul. Magazynowa 12", "street2" => "",
+            "name" => "Acme Warehouse", "company" => "Acme Sp. z o.o.",
+            "street1" => "ul. Magazynowa 12", "street2" => "",
             "city" => "Warszawa", "state" => "", "zip" => "00-001", "country" => "PL",
             "phone" => "+48221234567", "email" => "warehouse@acme.pl"
           },

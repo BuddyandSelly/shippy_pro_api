@@ -12,8 +12,8 @@ require "dotenv/load"
 # require "pry"
 # Pry.start
 
-@client = ShippyProAPI::Client.new(api_key: ENV['SHIPPY_PRO_API_KEY'])
-puts 'A ShippyProAPI::Client is created for testing purpose'
+@client = ShippyProAPI::Client.new(api_key: ENV.fetch("SHIPPY_PRO_API_KEY", nil))
+puts "A ShippyProAPI::Client is created for testing purpose"
 
 @params = {
   to_address: {

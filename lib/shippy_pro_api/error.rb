@@ -1,4 +1,7 @@
+# frozen_string_literal: true
+
 module ShippyProAPI
+  # Raised for every failure the gem reports, HTTP and API alike.
   class Error < StandardError
   end
 

@@ -57,4 +57,13 @@ RSpec.describe "API errors reported inside HTTP 200 responses" do
 
     expect { client.shipment.create({}) }.not_to raise_error
   end
+
+  it "hands back a body that is not a hash instead of reading an error out of it" do
+    stub_request(:post, "https://www.shippypro.com/api")
+      .to_return(status: 200, body: "just text", headers: { "Content-Type" => "text/plain" })
+
+    response = ShippyProAPI::Resource.new(client).post_request("", body: {})
+
+    expect(response.body).to eq("just text")
+  end
 end

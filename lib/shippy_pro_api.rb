@@ -2,6 +2,7 @@
 
 require_relative "shippy_pro_api/version"
 
+# A wrapper around the ShippyPro API: see ShippyProAPI::Client.
 module ShippyProAPI
   autoload :Client, "shippy_pro_api/client"
   autoload :Error, "shippy_pro_api/error"

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module ShippyProAPI
+  # The Ship, GetRates and GetTracking endpoints.
   class ShipmentResource < Resource
     def create(attributes)
       Shipment.new(post_request("Ship", body: attributes).body)
@@ -9,8 +10,8 @@ module ShippyProAPI
     def retrieve_rates(attributes)
       response = post_request("GetRates", body: attributes).body
 
-      available_rates = response['Rates']&.map { |rate| Rate.new(rate) }
-      rates_errors = response['RatesErrors']&.map { |rate| RateError.new(rate) }
+      available_rates = response["Rates"]&.map { |rate| Rate.new(rate) }
+      rates_errors = response["RatesErrors"]&.map { |rate| RateError.new(rate) }
 
       Rates.new(rates: available_rates, rates_errors: rates_errors)
     end

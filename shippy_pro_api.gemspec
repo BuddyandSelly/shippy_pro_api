@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.summary = "ShippyPro API Wrapper"
   spec.homepage = "https://github.com/PostCo/shippy_pro_api"
   spec.license = "MIT"
-  spec.required_ruby_version = ">= 2.6.0"
+  spec.required_ruby_version = ">= 3.2"
 
   # spec.metadata["allowed_push_host"] = "TODO: Set to your gem server 'https://example.com'"
 
@@ -36,12 +36,19 @@ Gem::Specification.new do |spec|
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html
 
-  spec.add_dependency 'activesupport', '>= 5.0', '< 7.1'
-  spec.add_dependency 'faraday', '>= 1.0', '< 3.0'
-  spec.add_dependency 'faraday_middleware', '~> 1.0'
+  spec.add_dependency "activesupport", ">= 7.0"
+  # The json request and response middleware moved into faraday itself in 1.10,
+  # so faraday_middleware (which never supported faraday 2) is no longer needed
+  # and both faraday majors work. gemfiles/faraday1.gemfile covers the older one.
+  spec.add_dependency "faraday", ">= 1.10"
+  # base64 and ostruct are not default gems any more: base64 encodes the api key,
+  # and ShippyProAPI::Object is an OpenStruct.
+  spec.add_dependency "base64", ">= 0.2"
+  spec.add_dependency "ostruct", ">= 0.6"
 
-  spec.add_development_dependency 'rspec'
-  spec.add_development_dependency 'pry'
-  spec.add_development_dependency 'dotenv'
-  spec.add_development_dependency 'webmock', '~> 3.0'
+  spec.add_development_dependency "dotenv", "~> 3.0"
+  spec.add_development_dependency "pry", "~> 0.15"
+  spec.add_development_dependency "rspec", "~> 3.13"
+  spec.add_development_dependency "simplecov", "~> 1.1"
+  spec.add_development_dependency "webmock", "~> 3.26"
 end

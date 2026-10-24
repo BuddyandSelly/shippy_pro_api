@@ -3,19 +3,9 @@
 require "active_support/core_ext/string"
 
 module ShippyProAPI
+  # Base class for the API resources: wraps a Client, serializes the request keys
+  # the way ShippyPro expects them and turns failures into ShippyProAPI::Error.
   class Resource
-    attr_reader :client
-
-    def initialize(client)
-      @client = client
-    end
-
-    def post_request(url, body:, headers: {})
-      handle_response client.connection.post(url, parse_body(body), headers)
-    end
-
-    private
-
     # Keys ShippyPro expects in snake_case; passed through untouched (including nested content).
     SNAKE_CASE_KEYS = %w[to_address from_address parcels weight_unit dimension_unit].freeze
 
@@ -29,6 +19,18 @@ module ShippyProAPI
 
     # ShippyPro can report failures in a 200 response body via these fields.
     API_ERROR_KEYS = %w[Error ErrorMessage].freeze
+
+    attr_reader :client
+
+    def initialize(client)
+      @client = client
+    end
+
+    def post_request(url, body:, headers: {})
+      handle_response client.connection.post(url, parse_body(body), headers)
+    end
+
+    private
 
     def handle_response(response)
       error_message = response.body
@@ -81,7 +83,8 @@ module ShippyProAPI
     # {"parcels"=>[{:test=>"yes"}], "Foo"=>"bar", "CarrierID"=>283}
 
     def camelize_selected_keys(params)
-      if params.is_a?(Hash)
+      case params
+      when Hash
         params.each_with_object({}) do |(key, value), new_hash|
           key = key.to_s
           if SNAKE_CASE_KEYS.include?(key)
@@ -90,15 +93,11 @@ module ShippyProAPI
             new_hash[SPECIAL_CASE_KEYS.fetch(key, key.camelcase)] = camelize_selected_keys(value)
           end
         end
-      elsif params.is_a?(Array)
+      when Array
         params.map { |value| camelize_selected_keys(value) }
       else
         params
       end
-    end
-
-    def parse_response(response)
-      response.body.deep_transform_keys { |key| key.to_s.underscore }
     end
   end
 end

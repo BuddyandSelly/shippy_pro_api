@@ -43,12 +43,12 @@ RSpec.describe ShippyProAPI::Client do
             "Authorization" => expected_auth_header,
             "Content-Type" => "application/json"
           }
-        ) { |req|
+        ) do |req|
           parsed = JSON.parse(req.body)
           expect(parsed["Method"]).to eq("Ship")
           expect(parsed["Params"]).to include("from_address", "to_address", "Foo" => "bar")
           true
-        }
+        end
         .to_return(
           status: 200,
           body: response_body.to_json,
@@ -68,25 +68,39 @@ RSpec.describe ShippyProAPI::Client do
   end
 
   describe "error handling" do
-    it "raises ShippyProAPI::Error on 401" do
+    def stub_status(status)
       stub_request(:post, "https://www.shippypro.com/api")
-        .to_return(status: 401, body: '{"Error": "invalid api key"}', headers: { "Content-Type" => "application/json" })
-
-      expect { client.shipment.create({}) }.to raise_error(ShippyProAPI::Error, /Invalid authorization/)
+        .to_return(status: status, body: %({"Error": "nope"}), headers: { "Content-Type" => "application/json" })
     end
 
-    it "raises ShippyProAPI::Error on 429" do
-      stub_request(:post, "https://www.shippypro.com/api")
-        .to_return(status: 429, body: '{"Error": "rate limit"}', headers: { "Content-Type" => "application/json" })
+    {
+      400 => /A bad request or a validation exception/,
+      401 => /Invalid authorization/,
+      403 => /doesn't have permission/,
+      404 => /cannot be found/,
+      429 => /rate limit/,
+      500 => /An unhandled error with the server/,
+      503 => /API is currently unavailable/
+    }.each do |status, message|
+      it "raises ShippyProAPI::Error on #{status}" do
+        stub_status(status)
 
-      expect { client.shipment.create({}) }.to raise_error(ShippyProAPI::Error, /rate limit/)
+        expect { client.shipment.create({}) }.to raise_error(ShippyProAPI::Error, message)
+      end
     end
 
-    it "raises ShippyProAPI::Error on 500" do
-      stub_request(:post, "https://www.shippypro.com/api")
-        .to_return(status: 500, body: '{"Error": "boom"}', headers: { "Content-Type" => "application/json" })
+    it "includes the response body in the message" do
+      stub_status(404)
 
-      expect { client.shipment.create({}) }.to raise_error(ShippyProAPI::Error, /unhandled error/)
+      expect { client.shipment.create({}) }.to raise_error(ShippyProAPI::Error, /nope/)
+    end
+
+    it "passes a status it has no message for through untouched" do
+      stub_request(:post, "https://www.shippypro.com/api")
+        .to_return(status: 418, body: %({"LabelURL": "https://example.com/label.pdf"}),
+                   headers: { "Content-Type" => "application/json" })
+
+      expect(client.shipment.create({}).label_url).to eq("https://example.com/label.pdf")
     end
   end
 end
